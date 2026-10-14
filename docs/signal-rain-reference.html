@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber-Mystical Matrix Rain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #ffffff;
+            font-family: 'Fira Code', monospace;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(224, 18, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(139, 0, 255, 0.25),
+                        inset 0 0 15px rgba(0, 255, 204, 0.2);
+        }
+
+        .neon-text-pink {
+            color: #ff00d4;
+            text-shadow: 0 0 8px rgba(255, 0, 212, 0.8), 0 0 16px rgba(224, 18, 255, 0.5);
+        }
+
+        .neon-text-cyan {
+            color: #00f0ff;
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.8), 0 0 16px rgba(0, 255, 204, 0.5);
+        }
+
+        .neon-btn {
+            background: linear-gradient(135deg, rgba(255,0,212,0.15), rgba(0,240,255,0.15));
+            border: 1px solid rgba(224, 18, 255, 0.5);
+            transition: all 0.25s ease;
+        }
+
+        .neon-btn:hover {
+            background: linear-gradient(135deg, rgba(255,0,212,0.4), rgba(0,240,255,0.4));
+            border-color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .neon-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Custom Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: rgba(139, 0, 255, 0.15);
+            border-radius: 8px;
+            height: 6px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff00d4;
+            cursor: pointer;
+            box-shadow: 0 0 10px #ff00d4, 0 0 20px #00f0ff;
+            border: 2px solid #ffffff;
+        }
+
+        /* Custom Checkbox */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #00f0ff;
+            background-color: #00f0ff;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: rgba(0, 240, 255, 0.4);
+        }
+
+        /* Glitch Animation Keyframes */
+        @keyframes glitch-anim {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); filter: hue-rotate(90deg); }
+            40% { transform: translate(-3px, -3px); filter: hue-rotate(180deg); }
+            60% { transform: translate(3px, 3px); filter: hue-rotate(270deg); }
+            80% { transform: translate(3px, -3px); filter: hue-rotate(360deg); }
+            100% { transform: translate(0); }
+        }
+
+        .glitch-active {
+            animation: glitch-anim 0.12s infinite;
+        }
+
+        /* Scrollbar styling for panel */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(224, 18, 255, 0.4);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="relative">
+
+    <div id="canvas-container">
+        <canvas id="matrixCanvas"></canvas>
+    </div>
+
+    <!-- Top Bar Title -->
+    <div class="absolute top-4 left-4 z-10 flex items-center gap-3 pointer-events-auto">
+        <div class="glass-panel px-4 py-2 rounded-xl flex items-center gap-3 border border-pink-300/50">
+            <i class="fa-solid fa-eye text-pink-500 animate-pulse text-xl"></i>
+            <div>
+                <h1 class="text-sm font-bold tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-500">
+                    CYBER-MYSTICAL MATRIX
+                </h1>
+                <p class="text-[10px] text-gray-600 font-medium">REALITY IS A LOOP // V3.0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Controls Toggle Floating Button -->
+    <button id="togglePanelBtn" class="absolute top-4 right-4 z-20 neon-btn p-3 rounded-xl text-pink-600 focus:outline-none flex items-center gap-2 font-semibold text-xs shadow-lg">
+        <i class="fa-solid fa-sliders text-base"></i>
+        <span>CONTROLS</span>
+    </button>
+
+    <!-- Interactive Dashboard Side Control Panel -->
+    <div id="controlPanel" class="absolute top-16 right-4 z-20 w-80 max-h-[calc(100vh-5rem)] glass-panel rounded-2xl p-5 overflow-y-auto transition-all duration-300 transform translate-x-0 opacity-100 text-gray-800 text-xs">
+        
+        <div class="flex items-center justify-between border-b border-pink-200/60 pb-3 mb-4">
+            <span class="font-bold tracking-wider text-pink-600 flex items-center gap-2">
+                <i class="fa-solid fa-terminal"></i> DASHBOARD PARAMETERS
+            </span>
+            <span id="fpsCounter" class="bg-cyan-100 text-cyan-800 text-[10px] px-2 py-0.5 rounded-full font-mono">60 FPS</span>
+        </div>
+
+        <!-- Speed & Density Controls -->
+        <div class="space-y-4 mb-5">
+            <div>
+                <div class="flex justify-between mb-1">
+                    <label class="font-semibold text-gray-700">Rain Speed</label>
+                    <span id="speedVal" class="text-pink-600 font-mono">1.0x</span>
+                </div>
+                <input type="range" id="speedSlider" min="0.2" max="3.0" step="0.1" value="1.0" class="w-full">
+            </div>
+
+            <div>
+                <div class="flex justify-between mb-1">
+                    <label class="font-semibold text-gray-700">Stream Density</label>
+                    <span id="densityVal" class="text-pink-600 font-mono">100%</span>
+                </div>
+                <input type="range" id="densitySlider" min="30" max="180" step="10" value="100" class="w-full">
+            </div>
+
+            <div>
+                <div class="flex justify-between mb-1">
+                    <label class="font-semibold text-gray-700">Glow Intensity</label>
+                    <span id="glowVal" class="text-cyan-600 font-mono">15px</span>
+                </div>
+                <input type="range" id="glowSlider" min="0" max="35" step="1" value="15" class="w-full">
+            </div>
+        </div>
+
+        <!-- Color Palette Selection -->
+        <div class="mb-5">
+            <label class="font-semibold text-gray-700 block mb-2">Color Matrix Spectrum</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button data-palette="mystic" class="palette-btn neon-btn py-2 px-3 rounded-lg text-left font-semibold text-[11px] border-pink-400 flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-gradient-to-r from-pink-500 to-cyan-400 inline-block"></span> Mystic Neon
+                </button>
+                <button data-palette="cyber" class="palette-btn neon-btn py-2 px-3 rounded-lg text-left font-semibold text-[11px] flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 inline-block"></span> Cyberpunk
+                </button>
+                <button data-palette="emerald" class="palette-btn neon-btn py-2 px-3 rounded-lg text-left font-semibold text-[11px] flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 inline-block"></span> Emerald Matrix
+                </button>
+                <button data-palette="hyper" class="palette-btn neon-btn py-2 px-3 rounded-lg text-left font-semibold text-[11px] flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 inline-block"></span> Hyper Light
+                </button>
+            </div>
+        </div>
+
+        <!-- Symbol & Glyph Toggles -->
+        <div class="mb-5 border-t border-pink-200/60 pt-4">
+            <label class="font-semibold text-gray-700 block mb-3">Symbol Arrays</label>
+            
+            <div class="space-y-2">
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-gray-700">Binary Digits (0, 1)</span>
+                    <input type="checkbox" id="toggleBinary" checked class="form-checkbox h-4 w-4 text-pink-600 rounded border-gray-300 focus:ring-pink-500">
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-gray-700">Sacred Symbols (☥, 𓁹, ✟)</span>
+                    <input type="checkbox" id="toggleSacred" checked class="form-checkbox h-4 w-4 text-pink-600 rounded border-gray-300 focus:ring-pink-500">
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-gray-700">Glyphs & Emojis (🙂, 😵, 🟇)</span>
+                    <input type="checkbox" id="toggleGlyphs" checked class="form-checkbox h-4 w-4 text-pink-600 rounded border-gray-300 focus:ring-pink-500">
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-gray-700">Philosophical Text Phrases</span>
+                    <input type="checkbox" id="togglePhrases" checked class="form-checkbox h-4 w-4 text-pink-600 rounded border-gray-300 focus:ring-pink-500">
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span class="text-gray-700">Nebula Fog Aura Particles</span>
+                    <input type="checkbox" id="toggleNebula" checked class="form-checkbox h-4 w-4 text-pink-600 rounded border-gray-300 focus:ring-pink-500">
+                </label>
+            </div>
+        </div>
+
+        <!-- Interactive FX Actions -->
+        <div class="border-t border-pink-200/60 pt-4 space-y-2">
+            <button id="glitchBtn" class="w-full neon-btn py-2 px-4 rounded-xl font-bold text-pink-600 flex items-center justify-center gap-2 shadow-md">
+                <i class="fa-solid fa-bolt"></i> TRIGGER REALITY GLITCH
+            </button>
+            <button id="burstBtn" class="w-full neon-btn py-2 px-4 rounded-xl font-bold text-cyan-600 flex items-center justify-center gap-2 shadow-md">
+                <i class="fa-solid fa-burst"></i> COSMIC ENERGY BURST
+            </button>
+        </div>
+
+        <!-- Mouse Interaction Mode -->
+        <div class="border-t border-pink-200/60 pt-4 mt-4">
+            <label class="font-semibold text-gray-700 block mb-2">Mouse Field Mode</label>
+            <div class="flex gap-2">
+                <button data-mouse="repel" class="mouse-mode-btn neon-btn flex-1 py-1.5 rounded-lg font-semibold text-[11px] text-pink-600 border-pink-400">Repel</button>
+                <button data-mouse="attract" class="mouse-mode-btn neon-btn flex-1 py-1.5 rounded-lg font-semibold text-[11px] text-gray-600">Attract</button>
+                <button data-mouse="trail" class="mouse-mode-btn neon-btn flex-1 py-1.5 rounded-lg font-semibold text-[11px] text-gray-600">Glow Trail</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        window.onload = function () {
+            // Setup Canvas Context
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas resolution
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const palettes = {
+                mystic: {
+                    primary: ['#ff00d4', '#e012ff', '#00f0ff', '#00ffcc', '#8b00ff', '#5000ff'],
+                    head: '#ffffff',
+                    bgFade: 'rgba(255, 255, 255, 0.18)',
+                    nebula: ['rgba(224, 18, 255, 0.12)', 'rgba(0, 240, 255, 0.12)', 'rgba(139, 0, 255, 0.1)']
+                },
+                cyber: {
+                    primary: ['#ff007f', '#9d00ff', '#7900ff', '#ff0033', '#e012ff'],
+                    head: '#ffffff',
+                    bgFade: 'rgba(255, 255, 255, 0.2)',
+                    nebula: ['rgba(255, 0, 127, 0.15)', 'rgba(157, 0, 255, 0.12)']
+                },
+                emerald: {
+                    primary: ['#00ffcc', '#00ff66', '#00e699', '#00b386', '#80ffdf'],
+                    head: '#ffffff',
+                    bgFade: 'rgba(255, 255, 255, 0.18)',
+                    nebula: ['rgba(0, 255, 204, 0.12)', 'rgba(0, 255, 102, 0.1)']
+                },
+                hyper: {
+                    primary: ['#00d2ff', '#0066ff', '#3300ff', '#8000ff', '#00f0ff'],
+                    head: '#ffffff',
+                    bgFade: 'rgba(255, 255, 255, 0.18)',
+                    nebula: ['rgba(0, 210, 255, 0.12)', 'rgba(0, 102, 255, 0.12)']
+                }
+            };
+
+            let currentPalette = palettes.mystic;
+
+            // Character sets matching images
+            const binaryChars = ['0', '1', '1', '0', '1', '0', '0', '1'];
+            const sacredChars = ['☥', '𓁹', '👁', '✟', '✙', '✥', '✦', '✧', '❇', '🟇', '∆', '∇', '◊'];
+            const glyphChars = ['🙂', '😵', '🈁', '♾', '⊕', '☸', '🪬', '☯', '✵'];
+            const phrases = [
+                "REALITY IS A LOOP...",
+                "IT LAUGHS IN FREQUENCIES",
+                "NEXT TRAIN ???",
+                "TILT LAUGHS IN FREQUENCIES",
+                "1010101",
+                "TRUTH IS A WAVE",
+                "SIGNAL DETECTED"
+            ];
+
+            // Simulation Config Settings
+            let config = {
+                speedMultiplier: 1.0,
+                density: 100,
+                glowBlur: 15,
+                useBinary: true,
+                useSacred: true,
+                useGlyphs: true,
+                usePhrases: true,
+                useNebula: true,
+                mouseMode: 'repel'
+            };
+
+            // Interactive Mouse Position
+            const mouse = {
+                x: -1000,
+                y: -1000,
+                radius: 180,
+                active: false
+            };
+
+            // Track mouse movements
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+                mouse.active = true;
+            });
+
+            window.addEventListener('mouseleave', () => {
+                mouse.active = false;
+            });
+
+            // Touch support
+            window.addEventListener('touchmove', (e) => {
+                if(e.touches.length > 0) {
+                    mouse.x = e.touches[0].clientX;
+                    mouse.y = e.touches[0].clientY;
+                    mouse.active = true;
+                }
+            });
+
+            class NebulaParticle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.radius = Math.random() * 150 + 80;
+                    this.color = currentPalette.nebula[Math.floor(Math.random() * currentPalette.nebula.length)];
+                    this.vx = (Math.random() - 0.5) * 0.4;
+                    this.vy = (Math.random() - 0.5) * 0.4;
+                    this.alpha = Math.random() * 0.6 + 0.2;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < -this.radius) this.x = width + this.radius;
+                    if (this.x > width + this.radius) this.x = -this.radius;
+                    if (this.y < -this.radius) this.y = height + this.radius;
+                    if (this.y > height + this.radius) this.y = -this.radius;
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.beginPath();
+                    let grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                    grad.addColorStop(0, this.color);
+                    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            let nebulaClouds = [];
+            function initNebula() {
+                nebulaClouds = [];
+                for (let i = 0; i < 15; i++) {
+                    nebulaClouds.push(new NebulaParticle());
+                }
+            }
+
+            class MatrixStream {
+                constructor(x) {
+                    this.x = x;
+                    this.fontSize = Math.floor(Math.random() * 10) + 14;
+                    this.y = Math.random() * -height;
+                    this.speed = (Math.random() * 3 + 2);
+                    this.symbols = [];
+                    this.isPhraseColumn = config.usePhrases && Math.random() < 0.12;
+                    this.phrase = phrases[Math.floor(Math.random() * phrases.length)];
+                    this.length = this.isPhraseColumn ? this.phrase.length : Math.floor(Math.random() * 18) + 8;
+                    this.primaryColor = currentPalette.primary[Math.floor(Math.random() * currentPalette.primary.length)];
+                    this.generateSymbols();
+                }
+
+                getAvailableCharPool() {
+                    let pool = [];
+                    if (config.useBinary) pool.push(...binaryChars);
+                    if (config.useSacred) pool.push(...sacredChars);
+                    if (config.useGlyphs) pool.push(...glyphChars);
+                    if (pool.length === 0) pool = ['0', '1', '✦', '☥'];
+                    return pool;
+                }
+
+                generateSymbols() {
+                    this.symbols = [];
+                    const pool = this.getAvailableCharPool();
+
+                    if (this.isPhraseColumn) {
+                        for (let i = 0; i < this.phrase.length; i++) {
+                            this.symbols.push({
+                                char: this.phrase[i],
+                                isSpecial: true,
+                                color: this.primaryColor
+                            });
+                        }
+                    } else {
+                        for (let i = 0; i < this.length; i++) {
+                            let char = pool[Math.floor(Math.random() * pool.length)];
+                            let isSpecial = sacredChars.includes(char) || glyphChars.includes(char);
+                            this.symbols.push({
+                                char: char,
+                                isSpecial: isSpecial,
+                                color: this.primaryColor
+                            });
+                        }
+                    }
+                }
+
+                update() {
+                    this.y += this.speed * config.speedMultiplier;
+
+                    // Randomly mutate characters
+                    if (Math.random() < 0.05 && !this.isPhraseColumn) {
+                        const pool = this.getAvailableCharPool();
+                        let idx = Math.floor(Math.random() * this.symbols.length);
+                        this.symbols[idx].char = pool[Math.floor(Math.random() * pool.length)];
+                    }
+
+                    // Mouse Interaction offset logic
+                    if (mouse.active) {
+                        let dx = this.x - mouse.x;
+                        let dy = (this.y) - mouse.y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < mouse.radius) {
+                            if (config.mouseMode === 'repel') {
+                                this.x += (dx / dist) * 3;
+                            } else if (config.mouseMode === 'attract') {
+                                this.x -= (dx / dist) * 3;
+                            }
+                        }
+                    }
+
+                    // Reset stream when scrolling beyond bottom screen
+                    if (this.y - (this.length * this.fontSize) > height) {
+                        this.y = Math.random() * -100 - 50;
+                        this.isPhraseColumn = config.usePhrases && Math.random() < 0.12;
+                        if (this.isPhraseColumn) {
+                            this.phrase = phrases[Math.floor(Math.random() * phrases.length)];
+                            this.length = this.phrase.length;
+                        } else {
+                            this.length = Math.floor(Math.random() * 18) + 8;
+                        }
+                        this.primaryColor = currentPalette.primary[Math.floor(Math.random() * currentPalette.primary.length)];
+                        this.generateSymbols();
+                    }
+                }
+
+                draw() {
+                    ctx.font = `${this.fontSize}px 'Fira Code', monospace`;
+
+                    for (let i = 0; i < this.symbols.length; i++) {
+                        let symbolY = this.y - (i * this.fontSize * 1.2);
+
+                        // Render visible ones within screen bounds
+                        if (symbolY < -30 || symbolY > height + 30) continue;
+
+                        let sym = this.symbols[i];
+
+                        // Bright glowing head character
+                        if (i === 0) {
+                            ctx.fillStyle = currentPalette.head;
+                            ctx.shadowColor = sym.color;
+                            ctx.shadowBlur = config.glowBlur * 1.5;
+                        } else {
+                            // Fading gradient down the trail
+                            let alpha = 1 - (i / this.symbols.length);
+                            ctx.fillStyle = sym.color;
+                            ctx.globalAlpha = Math.max(alpha, 0.15);
+                            ctx.shadowColor = sym.color;
+                            ctx.shadowBlur = config.glowBlur;
+                        }
+
+                        // Special size boost for sacred glyphs/symbols
+                        if (sym.isSpecial) {
+                            ctx.font = `bold ${this.fontSize * 1.3}px 'Fira Code', sans-serif`;
+                        } else {
+                            ctx.font = `${this.fontSize}px 'Fira Code', monospace`;
+                        }
+
+                        ctx.fillText(sym.char, this.x, symbolY);
+                        ctx.shadowBlur = 0;
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+            }
+
+            let streams = [];
+
+            function initStreams() {
+                streams = [];
+                let colWidth = Math.floor(width / config.density);
+                for (let i = 0; i < config.density; i++) {
+                    let x = i * colWidth + Math.random() * 5;
+                    streams.push(new MatrixStream(x));
+                }
+            }
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                initStreams();
+                initNebula();
+            });
+
+            // Energy Explosions Burst Particles
+            let energyParticles = [];
+            class EnergyParticle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.speed = Math.random() * 8 + 3;
+                    this.radius = Math.random() * 4 + 2;
+                    this.color = currentPalette.primary[Math.floor(Math.random() * currentPalette.primary.length)];
+                    this.life = 1.0;
+                    this.decay = Math.random() * 0.03 + 0.015;
+                    this.char = sacredChars[Math.floor(Math.random() * sacredChars.length)];
+                }
+
+                update() {
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed;
+                    this.life -= this.decay;
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(this.life, 0);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 12;
+                    ctx.font = `${this.radius * 4}px 'Fira Code'`;
+                    ctx.fillText(this.char, this.x, this.y);
+                    ctx.restore();
+                }
+            }
+
+            function triggerBurst(x, y) {
+                for (let i = 0; i < 40; i++) {
+                    energyParticles.push(new EnergyParticle(x, y));
+                }
+            }
+
+            // Mouse Glow Trail Effect
+            let trailPoints = [];
+            function drawMouseTrail() {
+                if (config.mouseMode === 'trail' && mouse.active) {
+                    trailPoints.push({ x: mouse.x, y: mouse.y, alpha: 1.0 });
+                }
+
+                for (let i = trailPoints.length - 1; i >= 0; i--) {
+                    let pt = trailPoints[i];
+                    pt.alpha -= 0.04;
+                    if (pt.alpha <= 0) {
+                        trailPoints.splice(i, 1);
+                        continue;
+                    }
+
+                    ctx.save();
+                    ctx.beginPath();
+                    let grad = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, 25);
+                    grad.addColorStop(0, `rgba(0, 240, 255, ${pt.alpha})`);
+                    grad.addColorStop(1, 'rgba(255, 0, 212, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.arc(pt.x, pt.y, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            const speedSlider = document.getElementById('speedSlider');
+            const speedVal = document.getElementById('speedVal');
+            speedSlider.addEventListener('input', (e) => {
+                config.speedMultiplier = parseFloat(e.target.value);
+                speedVal.textContent = `${config.speedMultiplier.toFixed(1)}x`;
+            });
+
+            const densitySlider = document.getElementById('densitySlider');
+            const densityVal = document.getElementById('densityVal');
+            densitySlider.addEventListener('input', (e) => {
+                config.density = parseInt(e.target.value);
+                densityVal.textContent = `${Math.round((config.density / 100) * 100)}%`;
+                initStreams();
+            });
+
+            const glowSlider = document.getElementById('glowSlider');
+            const glowVal = document.getElementById('glowVal');
+            glowSlider.addEventListener('input', (e) => {
+                config.glowBlur = parseInt(e.target.value);
+                glowVal.textContent = `${config.glowBlur}px`;
+            });
+
+            document.getElementById('toggleBinary').addEventListener('change', (e) => {
+                config.useBinary = e.target.checked;
+                streams.forEach(s => s.generateSymbols());
+            });
+
+            document.getElementById('toggleSacred').addEventListener('change', (e) => {
+                config.useSacred = e.target.checked;
+                streams.forEach(s => s.generateSymbols());
+            });
+
+            document.getElementById('toggleGlyphs').addEventListener('change', (e) => {
+                config.useGlyphs = e.target.checked;
+                streams.forEach(s => s.generateSymbols());
+            });
+
+            document.getElementById('togglePhrases').addEventListener('change', (e) => {
+                config.usePhrases = e.target.checked;
+                streams.forEach(s => s.generateSymbols());
+            });
+
+            document.getElementById('toggleNebula').addEventListener('change', (e) => {
+                config.useNebula = e.target.checked;
+            });
+
+            // Palette buttons setup
+            document.querySelectorAll('.palette-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    let key = btn.getAttribute('data-palette');
+                    currentPalette = palettes[key];
+                    streams.forEach(s => {
+                        s.primaryColor = currentPalette.primary[Math.floor(Math.random() * currentPalette.primary.length)];
+                    });
+                });
+            });
+
+            // Mouse mode buttons
+            document.querySelectorAll('.mouse-mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mouse-mode-btn').forEach(b => b.classList.remove('border-pink-400', 'text-pink-600'));
+                    btn.classList.add('border-pink-400', 'text-pink-600');
+                    config.mouseMode = btn.getAttribute('data-mouse');
+                });
+            });
+
+            // Action Trigger Buttons
+            const glitchBtn = document.getElementById('glitchBtn');
+            glitchBtn.addEventListener('click', () => {
+                document.body.classList.add('glitch-active');
+                setTimeout(() => {
+                    document.body.classList.remove('glitch-active');
+                }, 800);
+            });
+
+            const burstBtn = document.getElementById('burstBtn');
+            burstBtn.addEventListener('click', () => {
+                triggerBurst(width / 2, height / 2);
+            });
+
+            canvas.addEventListener('click', (e) => {
+                triggerBurst(e.clientX, e.clientY);
+            });
+
+            // Panel Collapsible Toggle
+            const togglePanelBtn = document.getElementById('togglePanelBtn');
+            const controlPanel = document.getElementById('controlPanel');
+            let isPanelOpen = true;
+
+            togglePanelBtn.addEventListener('click', () => {
+                isPanelOpen = !isPanelOpen;
+                if(isPanelOpen) {
+                    controlPanel.classList.remove('translate-x-full', 'opacity-0', 'pointer-events-none');
+                    controlPanel.classList.add('translate-x-0', 'opacity-100');
+                } else {
+                    controlPanel.classList.add('translate-x-full', 'opacity-0', 'pointer-events-none');
+                    controlPanel.classList.remove('translate-x-0', 'opacity-100');
+                }
+            });
+
+            // FPS Counter Logic
+            let lastTime = performance.now();
+            let frameCount = 0;
+            const fpsCounter = document.getElementById('fpsCounter');
+
+            initStreams();
+            initNebula();
+
+            function render(now) {
+                // FPS Update
+                frameCount++;
+                if (now - lastTime >= 1000) {
+                    fpsCounter.textContent = `${frameCount} FPS`;
+                    frameCount = 0;
+                    lastTime = now;
+                }
+
+                // Bright Light Background Fade
+                ctx.fillStyle = currentPalette.bgFade;
+                ctx.fillRect(0, 0, width, height);
+
+                // Render Background Aura Nebula Fog
+                if (config.useNebula) {
+                    nebulaClouds.forEach(cloud => {
+                        cloud.update();
+                        cloud.draw();
+                    });
+                }
+
+                // Render Rain Streams
+                streams.forEach(stream => {
+                    stream.update();
+                    stream.draw();
+                });
+
+                // Render Energy Particles Burst
+                for (let i = energyParticles.length - 1; i >= 0; i--) {
+                    let p = energyParticles[i];
+                    p.update();
+                    p.draw();
+                    if (p.life <= 0) energyParticles.splice(i, 1);
+                }
+
+                // Render Trail
+                drawMouseTrail();
+
+                requestAnimationFrame(render);
+            }
+
+            // Start animation on load
+            requestAnimationFrame(render);
+        };
+    </script>
+</body>
+</html>
